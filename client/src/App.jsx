@@ -1,7 +1,9 @@
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "./AuthContext.jsx";
 
+import TransactionSection from "./TransactionSection.jsx";
+import TransactionForm from "./TransactionForm.jsx";
+import { createTransaction, deleteTransaction, getTransactions, } from "./transactionApi.js";
 const summaryCards = [
   { title: "Total Balance", amount: "₹0", color: "text-slate-900" },
   { title: "Total Income", amount: "₹0", color: "text-emerald-600" },
@@ -9,10 +11,99 @@ const summaryCards = [
 ];
 
 function App() {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout, request } = useAuth();
+  const [showTransactionForm, setShowTransactionForm] = useState(false);
+  const [transactions, setTransactions] = useState([]);
+  const [transactionsError, setTransactionsError] = useState("");
+
+  const totals = transactions.reduce(
+    (result, transaction) => {
+      const amount = Number(transaction.amount) || 0;
+
+      if (transaction.type === "INCOME") result.income += amount;
+      if (transaction.type === "EXPENSE") result.expenses += amount;
+
+      return result;
+    },
+    { income: 0, expenses: 0 }
+  );
+
+  const formatINR = (amount) =>
+    amount.toLocaleString("en-IN", {
+      style: "currency",
+      currency: "INR",
+    });
+
+  const summaryCards = [
+    {
+      title: "Total Balance",
+      amount: formatINR(totals.income - totals.expenses),
+      color: "text-slate-900",
+    },
+    {
+      title: "Total Income",
+      amount: formatINR(totals.income),
+      color: "text-emerald-600",
+    },
+    {
+      title: "Total Expenses",
+      amount: formatINR(totals.expenses),
+      color: "text-rose-600",
+    },
+  ];
+
+  useEffect(() => {
+    if (!user?.id) return;
+    let active = true;
+
+    async function loadTransactions() {
+      try {
+        const data = await getTransactions(request);
+
+        if (active) {
+          setTransactions(data);
+          setTransactionsError("");
+        }
+      } catch (error) {
+        if (active) {
+          setTransactionsError(error.message || "Could not load transactions.");
+        }
+      }
+    }
+
+    loadTransactions();
+
+    return () => {
+      active = false;
+    };
+  }, [user?.id, request]);
+
+  async function handleTransactionDelete(id) {
+    try {
+      await deleteTransaction(request, id);
+
+      setTransactions((currentTransactions) =>
+        currentTransactions.filter((transaction) => transaction.id !== id)
+      );
+    } catch (error) {
+      console.error("Could not delete transaction:", error);
+    }
+  }
+
+  async function handleTransactionSubmit(transaction) {
+    try {
+      const savedTransaction = await createTransaction(request, transaction);
+
+      //adds the returned transaction to the front of the current list
+      setTransactions((currentTransactions) => [savedTransaction,...currentTransactions,]);
+      setShowTransactionForm(false);//after save, closes form.
+    } catch (error) {
+      console.error("Could not save transaction:", error);
+    }
+  }
 
   if (loading) {
-    return <main className="grid min-h-screen place-items-center text-slate-500">Checking your session...</main>;
+    return <main className="grid min-h-screen place-items-center text-slate-500">Loading...</main>;
   }
 
   if (!user) return <AuthScreen />;
@@ -81,48 +172,16 @@ function App() {
         </section>
 
         {/* Transaction section */}
-        <section
-          id="transactions"
-          className="mt-8 rounded-2xl bg-white p-6 shadow-sm"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h3 className="text-xl font-bold">Recent Transactions</h3>
-              <p className="mt-1 text-sm text-slate-500">
-                Your income and expenses will appear here.
-              </p>
-            </div>
-            <button
-              type="button"
-              className="rounded-lg bg-emerald-600 px-4 py-3 font-medium text-white hover:bg-emerald-700"
-            >
-              + Add Transaction
-            </button>
-          </div>
-
-          <div className="mt-6 overflow-x-auto">
-            <table className="w-full min-w-[500px] text-left">
-              <thead>
-                <tr className="border-b border-slate-200 text-sm text-slate-500">
-                  <th className="py-3 pr-4 font-medium">Title</th>
-                  <th className="py-3 pr-4 font-medium">Category</th>
-                  <th className="py-3 pr-4 font-medium">Date</th>
-                  <th className="py-3 text-right font-medium">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td
-                    colSpan={4}
-                    className="py-12 text-center text-slate-400"
-                  >
-                    No transactions yet. Add your first transaction soon.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
+        <TransactionSection transactions={transactions} 
+          onAddClick={() => setShowTransactionForm(true)}
+          onDelete={handleTransactionDelete}
+        />
+        {showTransactionForm && (
+          <TransactionForm 
+            onSubmit={handleTransactionSubmit}
+            onCancel={() => setShowTransactionForm(false)}
+          />
+        )}
 
         <footer className="mt-6 text-center text-sm text-slate-400">
           FinTrack · Your money, made clearer.
