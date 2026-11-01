@@ -60,6 +60,11 @@ Open the URL printed by Vite.
 - 'GET /api/auth/me' — return the authenticated user's email; requires a Bearer token
 - Other '/api/**' routes require authentication
 
+### Transaction CRUD APIs
+- 'POST /transactions' – Add transaction
+- 'GET /transactions' – List transactions (by user)
+- 'DELETE /transactions/:id' – Delete transaction
+
 ## Checks
 From 'server':
 	To confirm 'JWT_SECRET' creation
