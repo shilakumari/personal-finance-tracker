@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 const AuthContext = createContext(null);
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
@@ -72,7 +72,12 @@ export function AuthProvider({ children }) {
     setAuth(nextAuth);
   }
 
-  async function request(path, options = {}) {
+  const logout = useCallback(() => {
+    localStorage.removeItem(STORAGE_KEY);
+    setAuth(null);
+  }, []);
+
+  const request = useCallback(async (path, options = {}) => {
     const response = await fetch(`${API_URL}${path}`, {
       ...options,
       headers: {
@@ -85,13 +90,11 @@ export function AuthProvider({ children }) {
       logout();
       throw new Error("Your session has expired. Please sign in again.");
     }
-    return response;
-  }
 
-  function logout() {
-    localStorage.removeItem(STORAGE_KEY);
-    setAuth(null);
-  }
+    return response;
+  }, [auth?.token, logout]);
+
+
 
   return (
     <AuthContext.Provider
