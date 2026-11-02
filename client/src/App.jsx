@@ -1,3 +1,5 @@
+import toast from "react-hot-toast";
+
 import { useEffect, useState } from "react";
 import { useAuth } from "./AuthContext.jsx";
 
@@ -19,6 +21,8 @@ function App() {
   const [showTransactionForm, setShowTransactionForm] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [transactionsError, setTransactionsError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingTransactions, setIsLoadingTransactions] = useState(true);
 
   const totals = transactions.reduce(
     (result, transaction) => {
@@ -61,6 +65,8 @@ function App() {
     let active = true;
 
     async function loadTransactions() {
+      setIsLoadingTransactions(true);
+
       try {
         const data = await getTransactions(request);
 
@@ -71,6 +77,10 @@ function App() {
       } catch (error) {
         if (active) {
           setTransactionsError(error.message || "Could not load transactions.");
+        }
+      } finally {
+        if (active) {
+          setIsLoadingTransactions(false);
         }
       }
     }
@@ -89,20 +99,26 @@ function App() {
       setTransactions((currentTransactions) =>
         currentTransactions.filter((transaction) => transaction.id !== id)
       );
+      toast.success("Transaction deleted successfully.");
     } catch (error) {
-      console.error("Could not delete transaction:", error);
+      toast.error(error.message || "Could not delete transaction.");
     }
   }
 
   async function handleTransactionSubmit(transaction) {
+    setIsSaving(true);
+
     try {
       const savedTransaction = await createTransaction(request, transaction);
 
       //adds the returned transaction to the front of the current list
       setTransactions((currentTransactions) => [savedTransaction,...currentTransactions,]);
+      toast.success("Transaction saved successfully.");
       setShowTransactionForm(false);//after save, closes form.
     } catch (error) {
-      console.error("Could not save transaction:", error);
+      toast.error(error.message || "Could not save transaction.");
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -124,7 +140,7 @@ function App() {
           Personal Finance Tracker
         </p>
 
-        <nav className="mt-8 flex gap-3 md:flex-col">
+        <nav className="mt-8 flex flex-wrap gap-3 md:flex-col">
           <a
             href="#dashboard"
             className="rounded-lg bg-emerald-600 px-4 py-3"
@@ -155,6 +171,18 @@ function App() {
           </div>
         </header>
 
+        {isLoadingTransactions && (
+          <p role="status" className="mb-4 text-sm text-slate-500">
+            Loading your transactions...
+          </p>
+        )}
+
+        {!isLoadingTransactions && transactionsError && (
+          <p role="alert" className="mb-4 rounded-lg bg-rose-50 p-3 text-sm text-rose-700">
+            {transactionsError}
+          </p>
+        )}
+
         {/* Summary cards */}
         <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {summaryCards.map((card) => (
@@ -162,13 +190,9 @@ function App() {
         ))}
         </section>
 
-        {/* Expense Pie Chart */}
-        <div className="mt-6">
+        {/* Expense Pie Chart  and Monthly Trends Bar Chart*/}
+        <div className="mt-6 grid gap-6 lg:grid-cols-2">
           <ExpensePieChart transactions={transactions} />
-        </div>
-
-        {/* Monthly Trends Bar Chart */}
-        <div className="mt-6">
           <MonthlyTrendsChart transactions={transactions} />
         </div>
         
@@ -181,6 +205,7 @@ function App() {
           <TransactionForm 
             onSubmit={handleTransactionSubmit}
             onCancel={() => setShowTransactionForm(false)}
+            isSaving={isSaving}
           />
         )}
 

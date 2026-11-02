@@ -74,6 +74,9 @@ Integrated Recharts
 - Created a reusable StatsCard.jsx component
 -  It calculates total: Income, Expense, Balance.
 
+### Responsive Design + Mobile Testing
+- Optimized layout for mobile & tablet
+
 ## Checks
 From 'server':
 	To confirm 'JWT_SECRET' creation
