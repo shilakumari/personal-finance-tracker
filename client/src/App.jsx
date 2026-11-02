@@ -4,6 +4,10 @@ import { useAuth } from "./AuthContext.jsx";
 import TransactionSection from "./TransactionSection.jsx";
 import TransactionForm from "./TransactionForm.jsx";
 import { createTransaction, deleteTransaction, getTransactions, } from "./transactionApi.js";
+import ExpensePieChart from "./ExpensePieChart.jsx";
+import MonthlyTrendsChart from "./MonthlyTrendsChart.jsx";
+import StatsCard from "./StatsCard.jsx";
+
 const summaryCards = [
   { title: "Total Balance", amount: "₹0", color: "text-slate-900" },
   { title: "Total Income", amount: "₹0", color: "text-emerald-600" },
@@ -154,23 +158,20 @@ function App() {
         {/* Summary cards */}
         <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {summaryCards.map((card) => (
-            <div
-              key={card.title}
-              className="rounded-2xl bg-white p-6 shadow-sm"
-            >
-              <p className="text-sm font-medium text-slate-500">
-                {card.title}
-              </p>
-              <p className={`mt-3 text-3xl font-bold ${card.color}`}>
-                {card.amount}
-              </p>
-              <p className="mt-3 text-sm text-slate-400">
-                Your summary will appear here.
-              </p>
-            </div>
-          ))}
+            <StatsCard key={card.title} title={card.title} amount={card.amount} color={card.color} />
+        ))}
         </section>
 
+        {/* Expense Pie Chart */}
+        <div className="mt-6">
+          <ExpensePieChart transactions={transactions} />
+        </div>
+
+        {/* Monthly Trends Bar Chart */}
+        <div className="mt-6">
+          <MonthlyTrendsChart transactions={transactions} />
+        </div>
+        
         {/* Transaction section */}
         <TransactionSection transactions={transactions} 
           onAddClick={() => setShowTransactionForm(true)}

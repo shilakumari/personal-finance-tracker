@@ -65,6 +65,15 @@ Open the URL printed by Vite.
 - 'GET /transactions' – List transactions (by user)
 - 'DELETE /transactions/:id' – Delete transaction
 
+### Chart Integration
+Integrated Recharts 
+- Pie chart (category-wise expense)
+- Bar chart (monthly trends)
+
+### Budget Summary & Stats
+- Created a reusable StatsCard.jsx component
+-  It calculates total: Income, Expense, Balance.
+
 ## Checks
 From 'server':
 	To confirm 'JWT_SECRET' creation
