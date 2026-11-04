@@ -50,7 +50,7 @@ function TransactionSection({ onAddClick, onDelete, transactions = [] }) {
   return (
     <section
       id="transactions"
-      className="mt-8 rounded-2xl bg-white p-6 shadow-sm"
+      className="mt-8 rounded-2xl bg-white p-4 shadow-sm sm:p-6"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>

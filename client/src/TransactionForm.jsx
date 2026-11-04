@@ -1,6 +1,6 @@
 //import { React } from "react";
 
-function TransactionForm({ onSubmit, onCancel }) {
+function TransactionForm({ onSubmit, onCancel, isSaving }) {
   function handleSubmit(event) {
     event.preventDefault();
 
@@ -16,7 +16,7 @@ function TransactionForm({ onSubmit, onCancel }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-4 space-y-4 rounded-2xl bg-white p-6 shadow-sm">
+    <form onSubmit={handleSubmit} className="mt-4 space-y-4 rounded-2xl bg-white p-4 shadow-sm sm:p-6">
       <h3 className="text-xl font-bold">Add Transaction</h3>
 
       <label className="block text-sm font-medium text-slate-700">
@@ -59,11 +59,12 @@ function TransactionForm({ onSubmit, onCancel }) {
       </label>
 
       <div className="flex gap-3">
-        <button type="submit"
-          className="rounded-lg bg-emerald-600 px-4 py-2 font-medium text-white hover:bg-emerald-700"
+        <button type="submit" disabled={isSaving}
+          className="rounded-lg bg-emerald-600 px-4 py-2 font-medium text-white hover:bg-emerald-700 disabled:cursor-wait disabled:opacity-60"
         >
-          Save Transaction
+          {isSaving ? "Saving..." : "Save Transaction"}
         </button>
+
         <button type="button"
           onClick={onCancel}
           className="rounded-lg border border-slate-300 px-4 py-2 font-medium hover:bg-slate-50"
