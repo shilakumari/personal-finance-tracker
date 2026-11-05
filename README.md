@@ -77,6 +77,26 @@ Integrated Recharts
 ### Responsive Design + Mobile Testing
 - Optimized layout for mobile & tablet
 
+### Deployment Instructions
+For deployement, first push 'personal-finance-tracker' on github
+
+- Frontend on Vercel(personal-finance-tracker/client)
+	Create Vercel account, click Sign Up.
+	Select Continue with GitHub.
+	'Create New' project.
+	Give Vercel permission to access your repository.
+		Choose -> Only select repositories -> select and deploy.
+		Before deploye -> set 'Environment Variable' 
+			VITE_API_URL : https://personal-finance-tracker-5-2v5c.onrender.com
+
+- Backend on Render(personal-finance-tracker/server)
+	Create a Dockerfile.
+	Go to Render and Sign in.
+	  Dashboard -> Click New -> Connect to GitHub -> Select repository
+	  Configure 'Environment Variables' on Render.
+		CLIENT_ORIGIN : https://www.shilakumari.com
+	  Then Deploye.
+
 ## Checks
 From 'server':
 	To confirm 'JWT_SECRET' creation
